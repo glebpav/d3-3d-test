@@ -64,9 +64,9 @@ function loadCanvas(pos, adj) {
 
     for (let i = 0; i < pos.length; i++) {
         data.push({
-            x: pos[i][0] * 20,
-            y: pos[i][1] * 20,
-            z: pos[i][2] * 20,
+            x: pos[i][0] * 50,
+            y: pos[i][1] * 50,
+            z: pos[i][2] * 50,
             fill: "#a773f5",
         });
     }
@@ -113,7 +113,6 @@ function loadCanvas(pos, adj) {
     }
 
 
-
     function processData(data, dataAdj) {
         const points = svg.selectAll('circle').data(data);
         const lines = svg.selectAll('line').data(dataAdj);
@@ -131,9 +130,13 @@ function loadCanvas(pos, adj) {
             .attr('y2', (d, i) => d[data2[i][1]].projected.y)
             .attr('z1', (d, i) => d[data2[i][0]].projected.z)
             .attr('z2', (d, i) => d[data2[i][1]].projected.z)
-            .attr('stroke', '#fff')
-            .attr('stroke-width', 1)
-            .attr('fill', "#ff0303");
+            .attr('stroke', (d, i) => {
+                if (data2[i][0] != data2[i][1] + 1 && data2[i][0] != data2[i][1] - 1) {
+                    console.log('blackBone');
+                    return '#5a63fd'
+                } else return '#e6c9ff'
+            })
+            .attr('stroke-width', 3);
 
 
         const p = points
@@ -145,7 +148,8 @@ function loadCanvas(pos, adj) {
             .attr('stroke', (d, i) => "#e6c9ff")
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
-            .attr('r', d => 2)
+            .attr('r', d => 6)
+            .attr('stroke-width', 3)
             .sort(points3d.sort);
 
     }

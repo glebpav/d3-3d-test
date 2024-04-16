@@ -2,7 +2,6 @@ import {
     color,
     drag,
     extent,
-    randomInt,
     scaleLinear,
     scaleOrdinal,
     schemeCategory10,

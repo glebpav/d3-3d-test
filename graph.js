@@ -11,6 +11,7 @@ import {
 
 import {
     points3D,
+    line,
 } from "https://cdn.skypack.dev/d3-3d@1.0.0";
 
 $.ajax({
@@ -60,11 +61,9 @@ function loadCanvas(pos, adj) {
             x: pos[i][0] * 30,
             y: pos[i][1] * 30,
             z: pos[i][2] * 30,
-            fill: colorScale(10),
+            fill: "#a773f5",
         });
     }
-
-    console.log(data)
 
     const data3D = points3d(data);
     const extentZ = extent(data3D, d => d.rotated.z);
@@ -95,12 +94,14 @@ function loadCanvas(pos, adj) {
             .append('circle')
             .merge(points)
             .classed('d3-3d', true)
-            .attr('fill', (d, i) => colorScale(i))
-            .attr('stroke', (d, i) => color(colorScale(i)).brighter(1))
+            .attr('fill', (d, i) => "#a773f5")
+            .attr('stroke', (d, i) => "#e6c9ff")
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
-            .attr('r', d => 5)
+            .attr('r', d => 2)
             .sort(points3d.sort);
+
+
     }
 
     processData(data3D);

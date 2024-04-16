@@ -14,13 +14,31 @@ import {
     lines3D,
 } from "https://cdn.skypack.dev/d3-3d@1.0.0";
 
-$.ajax({
-    url: "data/data.json",
-    dataType: "json",
-    success: function (response) {
-        loadCanvas(response["pos"], response["adj"])
-    }
-});
+// console.log(document.getElementById('db_seq').value)
+
+fetch('http://127.0.0.1:5000/run-script', {
+    method: 'POST',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        sequence: "((((((((((((..[[[[[.)))))).((((((.......)))))).((((((.]]]]]..))))))))))))",
+    })
+})
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        response.json().then(data => {
+            const input = JSON.parse(data)
+            loadCanvas(input.pos, input.adj)
+        })
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
 
 function loadCanvas(pos, adj) {
 
@@ -71,7 +89,6 @@ function loadCanvas(pos, adj) {
         });
     }
 
-    console.log(adj.length)
     const data1 = [];
     const data2 = [];
     for (let i = 0; i < adj.length; i++) {
@@ -89,8 +106,6 @@ function loadCanvas(pos, adj) {
             ])
         }
     });
-
-    console.log(data1)
 
     const lines3dWrapper = lines3d(data1);
     const points3dWrapper = points3d(data);
@@ -132,9 +147,8 @@ function loadCanvas(pos, adj) {
             .attr('z2', (d, i) => d[data2[i][1]].projected.z)
             .attr('stroke', (d, i) => {
                 if (data2[i][0] != data2[i][1] + 1 && data2[i][0] != data2[i][1] - 1) {
-                    console.log('blackBone');
-                    return '#5a63fd'
-                } else return '#e6c9ff'
+                    return '#207dff'
+                } else return '#ffffff'
             })
             .attr('stroke-width', 3);
 
@@ -144,14 +158,13 @@ function loadCanvas(pos, adj) {
             .append('circle')
             .merge(points)
             .classed('d3-3d', true)
-            .attr('fill', (d, i) => "#a773f5")
-            .attr('stroke', (d, i) => "#e6c9ff")
+            .attr('fill', (d, i) => "#ffe372")
+            .attr('stroke', (d, i) => "#7a4900")
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
-            .attr('r', d => 6)
+            .attr('r', d => 12)
             .attr('stroke-width', 3)
             .sort(points3d.sort);
-
     }
 
     processData(points3dWrapper, lines3dWrapper);

@@ -16,7 +16,7 @@ import {
 
 // console.log(document.getElementById('db_seq').value)
 
-fetch('http://127.0.0.1:5000/run-script', {
+fetch('http://0.0.0.0:80/run-script', {
     method: 'POST',
     headers: {
         'Accept': 'application/json',
@@ -45,15 +45,13 @@ function loadCanvas(pos, adj) {
     const {innerWidth, innerHeight} = window;
     const data = [];
     const origin = {x: innerWidth / 2, y: innerHeight / 2};
-    const startAngle = Math.PI / 8;
-    const colorScale = scaleOrdinal(schemeCategory10);
+    const startAngle = 0;
 
     const svg = select('svg')
         .call(drag()
             .on('drag', dragged)
             .on('start', dragStart)
-            .on('end', dragEnd))
-        .append('g');
+            .on('end', dragEnd));
 
     const points3d = points3D()
         .x(d => d.x)
@@ -61,7 +59,6 @@ function loadCanvas(pos, adj) {
         .z(d => d.z)
         .scale(5)
         .origin(origin)
-        .rotateX(-startAngle)
         .rotateY(startAngle);
 
     const lines3d = lines3D()
@@ -110,6 +107,20 @@ function loadCanvas(pos, adj) {
     const lines3dWrapper = lines3d(data1);
     const points3dWrapper = points3d(data);
 
+    /*const pointsElements = [];
+    for (let i = 0; i < data.length; i++) {
+        const element = document.createElement("circle");
+        element.classList.add("d3-3d");
+        element.setAttribute("fill", "#ffe372");
+        element.setAttribute("stroke", "#7a4900");
+        element.setAttribute("cx", data[i].projected.x);
+        element.setAttribute("cy", data[i].projected.y);
+        element.setAttribute("r", 12);
+        element.setAttribute("stroke-width", 3);
+        document.getElementById("core").appendChild(element);
+        pointsElements.push(element);
+    }*/
+
     function dragStart(e) {
         mx = e.x;
         my = e.y;
@@ -128,14 +139,26 @@ function loadCanvas(pos, adj) {
     }
 
 
+    function updateData() {
+        for (let i = 0; i < pointsElements.length; i++) {
+            pointsElements[i].setAttribute("cx", data[i].projected.x);
+            pointsElements[i].setAttribute("cy", data[i].projected.y);
+        }
+    }
+
     function processData(data, dataAdj) {
         const points = svg.selectAll('circle').data(data);
-        const lines = svg.selectAll('line').data(dataAdj);
+        const lines1 = svg.selectAll('line').data(dataAdj);
 
-        const l = lines
+        /*for (let i = 0; i < pointsElements.length; i++) {
+            pointsElements[i].setAttribute("cx", data[i].projected.x);
+            pointsElements[i].setAttribute("cy", data[i].projected.y);
+        }*/
+
+        const l = lines1
             .enter()
             .append('line')
-            .merge(lines)
+            .merge(lines1)
             .classed('d3-3d', true)
             .datum(data)
             // .attr('d', lineGenerator)
@@ -145,6 +168,7 @@ function loadCanvas(pos, adj) {
             .attr('y2', (d, i) => d[data2[i][1]].projected.y)
             .attr('z1', (d, i) => d[data2[i][0]].projected.z)
             .attr('z2', (d, i) => d[data2[i][1]].projected.z)
+            .attr('z', (d, i) => Math.min(d[data2[i][1]].rotated.z, d[data2[i][0]].rotated.z))
             .attr('stroke', (d, i) => {
                 if (data2[i][0] != data2[i][1] + 1 && data2[i][0] != data2[i][1] - 1) {
                     return '#207dff'
@@ -158,15 +182,48 @@ function loadCanvas(pos, adj) {
             .append('circle')
             .merge(points)
             .classed('d3-3d', true)
-            .attr('fill', (d, i) => "#ffe372")
-            .attr('stroke', (d, i) => "#7a4900")
+            .attr('fill', "#ffe372")
+            .attr('stroke', "#7a4900")
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
-            .attr('r', d => 12)
+            .attr('r', 12)
             .attr('stroke-width', 3)
-            .sort(points3d.sort);
+            .attr('z', d => d.rotated.z);
+        // .sort(points3d.sort);
+
+        // Get all circle and line elements from the DOM
+        const circles = Array.from(document.querySelectorAll('circle'));
+        const lines = Array.from(document.querySelectorAll('line'));
+
+// Combine circles and lines into a single array
+        const shapes = circles.concat(lines);
+
+// Sort the shapes based on their 'z' attribute
+        shapes.sort((a, b) => {
+            const zA = parseInt(a.getAttribute('z'));
+            const zB = parseInt(b.getAttribute('z'));
+            return zA - zB;
+        });
+
+// Remove existing shapes from the DOM
+        shapes.forEach(shape => {
+            shape.parentNode.removeChild(shape);
+        });
+
+// Append sorted shapes back to the DOM
+        const svg1 = document.querySelector('svg'); // Assuming shapes are within an SVG element
+        shapes.forEach(shape => {
+            svg1.appendChild(shape);
+        });
+
+
+
     }
 
     processData(points3dWrapper, lines3dWrapper);
+
+}
+
+function addNewPoint() {
 
 }

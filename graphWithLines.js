@@ -14,7 +14,11 @@ import {
     lines3D,
 } from "https://cdn.skypack.dev/d3-3d@1.0.0";
 
-// console.log(document.getElementById('db_seq').value)
+
+let shape = {
+    sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG",
+    structure : "((((((((((((..[[[[[.)))))).((((((.......)))))).((((((.]]]]]..))))))))))))"
+}
 
 fetch('http://0.0.0.0:80/run-script', {
     method: 'POST',
@@ -23,7 +27,7 @@ fetch('http://0.0.0.0:80/run-script', {
         'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-        sequence: "((((((((((((..[[[[[.)))))).((((((.......)))))).((((((.]]]]]..))))))))))))",
+        sequence: shape.structure,
     })
 })
     .then(response => {
@@ -38,6 +42,32 @@ fetch('http://0.0.0.0:80/run-script', {
     .catch(error => {
         console.error('Error:', error);
     });
+
+
+function shadeColor(color, percent) {
+
+    var R = parseInt(color.substring(1,3),16);
+    var G = parseInt(color.substring(3,5),16);
+    var B = parseInt(color.substring(5,7),16);
+
+    R = parseInt(R * (100 + percent) / 100);
+    G = parseInt(G * (100 + percent) / 100);
+    B = parseInt(B * (100 + percent) / 100);
+
+    R = (R<255)?R:255;
+    G = (G<255)?G:255;
+    B = (B<255)?B:255;
+
+    R = Math.round(R)
+    G = Math.round(G)
+    B = Math.round(B)
+
+    var RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+    var GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+    var BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+
+    return "#"+RR+GG+BB;
+}
 
 
 function loadCanvas(pos, adj) {
@@ -213,8 +243,8 @@ function loadCanvas(pos, adj) {
             .append('circle')
             .merge(points)
             .classed('d3-3d', true)
-            .attr('fill', "#ffe372")
-            .attr('stroke', "#7a4900")
+            .attr('fill', d => shadeColor("#ffe372", -(100 - Math.min(100, (d.rotated.z + 150) / 2.0))))
+            .attr('stroke', d => shadeColor("#7a4900", -(100 - Math.min(100, (d.rotated.z + 150) / 2.0))))
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
             .attr('r', sphereRadius)
@@ -226,7 +256,7 @@ function loadCanvas(pos, adj) {
             .enter()
             .append("text")
             .attr("class", "text")
-            .attr("dy", "-.7em")
+            .attr("dy", "-.5em")
             .attr("text-anchor", "middle")
             .attr("font-family", "system-ui, sans-serif")
             .attr("font-weight", "bolder")
@@ -234,11 +264,12 @@ function loadCanvas(pos, adj) {
             .attr("y", (d) => d.projected.y)
             .classed("d3-3d", true)
             .merge(texts)
-            .attr("fill", "red")
+            .attr("fill", d => shadeColor("#207dff", -(100 - Math.min(100, (d.rotated.z + 150) / 2.0))))
             .attr("stroke", "none")
-            .attr("x", (d) => d.centroid.x)
-            .attr("y", (d) => d.centroid.y)
-            .text('10')
+            .attr("x", (d) => d.projected.x)
+            .attr("y", (d) => d.projected.y + sphereRadius * 1.3)
+            .attr('z', (d, i) => d.rotated.z + 0.01)
+            .text((d, i) => shape.sequence[i])
 
 
         /*texts
@@ -266,8 +297,10 @@ function loadCanvas(pos, adj) {
         // Get all circle and line elements from the DOM
         const circles = Array.from(document.querySelectorAll('circle'));
         const lines = Array.from(document.querySelectorAll('line'));
+        const textsElements = Array.from(document.querySelectorAll('text'));
 
-        const shapes = circles.concat(lines);
+        const shapes = circles.concat(lines).concat(textsElements);
+
 
         shapes.sort((a, b) => {
             const zA = parseInt(a.getAttribute('z'));

@@ -16,8 +16,8 @@ import {
 
 
 let shape = {
-    sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG",
-    structure : "((((((((((((..[[[[[.)))))).((((((.......)))))).((((((.]]]]]..))))))))))))"
+    sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",
+    structure : "((((((((((((..[[[[..)))))).((((((.......)))))).((((((.]]]]...))))))))))))"
 }
 
 fetch('http://0.0.0.0:80/run-script', {
@@ -68,6 +68,15 @@ function shadeColor(color, percent) {
 
     return "#"+RR+GG+BB;
 }
+
+function getShadingPercentage(value) {
+    const maxVale = 100;
+    const minValue = -100;
+
+    return -(100 - Math.min(100, (value - minValue) / (maxVale - minValue) * 100))
+
+}
+
 
 
 function loadCanvas(pos, adj) {
@@ -231,9 +240,10 @@ function loadCanvas(pos, adj) {
             .attr('z2', (d, i) => d[data2[i][1]].projected.z)
             .attr('z', (d, i) => Math.min(d[data2[i][1]].rotated.z, d[data2[i][0]].rotated.z))
             .attr('stroke', (d, i) => {
+                const z = (d[data2[i][1]].rotated.z + d[data2[i][0]].rotated.z) / 2;
                 if (data2[i][0] != data2[i][1] + 1 && data2[i][0] != data2[i][1] - 1) {
-                    return '#207dff'
-                } else return '#ffffff'
+                    return shadeColor('#207dff', getShadingPercentage(z))
+                } else return shadeColor('#ffffff', getShadingPercentage(z))
             })
             .attr('stroke-width', 3);
 
@@ -243,14 +253,13 @@ function loadCanvas(pos, adj) {
             .append('circle')
             .merge(points)
             .classed('d3-3d', true)
-            .attr('fill', d => shadeColor("#ffe372", -(100 - Math.min(100, (d.rotated.z + 150) / 2.0))))
-            .attr('stroke', d => shadeColor("#7a4900", -(100 - Math.min(100, (d.rotated.z + 150) / 2.0))))
+            .attr('fill', d => shadeColor("#ffe372", getShadingPercentage(d.rotated.z)))
+            .attr('stroke', d => shadeColor("#7a4900", getShadingPercentage(d.rotated.z)))
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
             .attr('r', sphereRadius)
             .attr('stroke-width', 3)
             .attr('z', d => d.rotated.z);
-        // .sort(points3d.sort);
 
         const t = texts
             .enter()
@@ -264,35 +273,12 @@ function loadCanvas(pos, adj) {
             .attr("y", (d) => d.projected.y)
             .classed("d3-3d", true)
             .merge(texts)
-            .attr("fill", d => shadeColor("#207dff", -(100 - Math.min(100, (d.rotated.z + 150) / 2.0))))
+            .attr("fill", d => shadeColor("#207dff", getShadingPercentage(d.rotated.z)))
             .attr("stroke", "none")
             .attr("x", (d) => d.projected.x)
             .attr("y", (d) => d.projected.y + sphereRadius * 1.3)
             .attr('z', (d, i) => d.rotated.z + 0.01)
-            .text((d, i) => shape.sequence[i])
-
-
-        /*texts
-            .enter()
-            .append("text")
-            .attr("class", "text")
-            .attr("dy", "-.7em")
-            .attr("text-anchor", "middle")
-            .attr("font-family", "system-ui, sans-serif")
-            .attr("font-weight", "bolder")
-            .attr("x", (d) => d.centroid.x)
-            .attr("y", (d) => d.centroid.y)
-            .classed("d3-3d", true)
-            .merge(texts)
-            .attr("fill", "black")
-            .attr("stroke", "none")
-            .attr("x", (d) => d.centroid.x)
-            .attr("y", (d) => d.centroid.y)
-            .tween("text", function (d) {
-                return 10;
-            });
-
-        texts.exit().remove();*/
+            .text((d, i) => shape.sequence[i]);
 
         // Get all circle and line elements from the DOM
         const circles = Array.from(document.querySelectorAll('circle'));

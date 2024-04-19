@@ -36,7 +36,7 @@ fetch('http://0.0.0.0:80/run-script-with-markers', {
         }
         response.json().then(data => {
             const input = JSON.parse(data)
-            loadCanvas(input.pos, input.adj)
+            loadCanvas(input.pos, input.adj, input.knots)
         })
     })
     .catch(error => {
@@ -78,7 +78,7 @@ function getShadingPercentage(value) {
 }
 
 
-function loadCanvas(pos, adj) {
+function loadCanvas(pos, adj, knots) {
 
     const {innerWidth, innerHeight} = window;
     const data = [];
@@ -240,9 +240,11 @@ function loadCanvas(pos, adj) {
             .attr('z', (d, i) => Math.min(d[data2[i][1]].rotated.z, d[data2[i][0]].rotated.z))
             .attr('stroke', (d, i) => {
                 const z = (d[data2[i][1]].rotated.z + d[data2[i][0]].rotated.z) / 2;
-                if (data2[i][0] != data2[i][1] + 1 && data2[i][0] != data2[i][1] - 1) {
-                    return shadeColor('#207dff', getShadingPercentage(z))
-                } else return shadeColor('#ffffff', getShadingPercentage(z))
+                if (data2[i][0] == data2[i][1] + 1 || data2[i][0] == data2[i][1] - 1) {
+                    return shadeColor('#ffffff', getShadingPercentage(z))
+                } else if (knots.includes(data2[i][1]) || knots.includes(data2[i][0])) {
+                    return shadeColor('#72ff9c', getShadingPercentage(z))
+                } else return shadeColor('#207dff', getShadingPercentage(z))
             })
             .attr('stroke-width', 3);
 

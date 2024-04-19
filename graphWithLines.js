@@ -46,6 +46,8 @@ function loadCanvas(pos, adj) {
     const data = [];
     const origin = {x: innerWidth / 2, y: innerHeight / 2};
     const startAngle = 0;
+    var distances = [];
+    const sphereRadius = 12;
 
     const svg = select('svg')
         .call(drag()
@@ -149,11 +151,24 @@ function loadCanvas(pos, adj) {
     function processData(data, dataAdj) {
         const points = svg.selectAll('circle').data(data);
         const lines1 = svg.selectAll('line').data(dataAdj);
+        const texts = svg.selectAll("text.text").data(data);
 
         /*for (let i = 0; i < pointsElements.length; i++) {
             pointsElements[i].setAttribute("cx", data[i].projected.x);
             pointsElements[i].setAttribute("cy", data[i].projected.y);
         }*/
+
+        distances = []
+
+        for (let j = 0; j < data2.length; j++) {
+            const p1 = data[data2[j][0]].projected;
+            const p2 = data[data2[j][1]].projected;
+
+            distances.push(Math.sqrt(
+                Math.pow((p1.x - p2.x), 2)
+                + Math.pow((p1.y - p2.y), 2)
+            ))
+        }
 
         const l = lines1
             .enter()
@@ -162,10 +177,26 @@ function loadCanvas(pos, adj) {
             .classed('d3-3d', true)
             .datum(data)
             // .attr('d', lineGenerator)
-            .attr('x1', (d, i) => d[data2[i][0]].projected.x)
-            .attr('x2', (d, i) => d[data2[i][1]].projected.x)
-            .attr('y1', (d, i) => d[data2[i][0]].projected.y)
-            .attr('y2', (d, i) => d[data2[i][1]].projected.y)
+            .attr('x1', (d, i) => {
+                return d[data2[i][0]].projected.x
+                    + (d[data2[i][1]].projected.x - d[data2[i][0]].projected.x)
+                    * (sphereRadius / distances[i]);
+            })
+            .attr('x2', (d, i) => {
+                return d[data2[i][1]].projected.x
+                    + (d[data2[i][0]].projected.x - d[data2[i][1]].projected.x)
+                    * sphereRadius / distances[i];
+            })
+            .attr('y1', (d, i) => {
+                return d[data2[i][0]].projected.y
+                    + (d[data2[i][1]].projected.y - d[data2[i][0]].projected.y)
+                    * sphereRadius / distances[i];
+            })
+            .attr('y2', (d, i) => {
+                return d[data2[i][1]].projected.y
+                    + (d[data2[i][0]].projected.y - d[data2[i][1]].projected.y)
+                    * sphereRadius / distances[i];
+            })
             .attr('z1', (d, i) => d[data2[i][0]].projected.z)
             .attr('z2', (d, i) => d[data2[i][1]].projected.z)
             .attr('z', (d, i) => Math.min(d[data2[i][1]].rotated.z, d[data2[i][0]].rotated.z))
@@ -186,36 +217,72 @@ function loadCanvas(pos, adj) {
             .attr('stroke', "#7a4900")
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
-            .attr('r', 12)
+            .attr('r', sphereRadius)
             .attr('stroke-width', 3)
             .attr('z', d => d.rotated.z);
         // .sort(points3d.sort);
+
+        const t = texts
+            .enter()
+            .append("text")
+            .attr("class", "text")
+            .attr("dy", "-.7em")
+            .attr("text-anchor", "middle")
+            .attr("font-family", "system-ui, sans-serif")
+            .attr("font-weight", "bolder")
+            .attr("x", (d) => d.projected.x)
+            .attr("y", (d) => d.projected.y)
+            .classed("d3-3d", true)
+            .merge(texts)
+            .attr("fill", "red")
+            .attr("stroke", "none")
+            .attr("x", (d) => d.centroid.x)
+            .attr("y", (d) => d.centroid.y)
+            .text('10')
+
+
+        /*texts
+            .enter()
+            .append("text")
+            .attr("class", "text")
+            .attr("dy", "-.7em")
+            .attr("text-anchor", "middle")
+            .attr("font-family", "system-ui, sans-serif")
+            .attr("font-weight", "bolder")
+            .attr("x", (d) => d.centroid.x)
+            .attr("y", (d) => d.centroid.y)
+            .classed("d3-3d", true)
+            .merge(texts)
+            .attr("fill", "black")
+            .attr("stroke", "none")
+            .attr("x", (d) => d.centroid.x)
+            .attr("y", (d) => d.centroid.y)
+            .tween("text", function (d) {
+                return 10;
+            });
+
+        texts.exit().remove();*/
 
         // Get all circle and line elements from the DOM
         const circles = Array.from(document.querySelectorAll('circle'));
         const lines = Array.from(document.querySelectorAll('line'));
 
-// Combine circles and lines into a single array
         const shapes = circles.concat(lines);
 
-// Sort the shapes based on their 'z' attribute
         shapes.sort((a, b) => {
             const zA = parseInt(a.getAttribute('z'));
             const zB = parseInt(b.getAttribute('z'));
             return zA - zB;
         });
 
-// Remove existing shapes from the DOM
         shapes.forEach(shape => {
             shape.parentNode.removeChild(shape);
         });
 
-// Append sorted shapes back to the DOM
         const svg1 = document.querySelector('svg'); // Assuming shapes are within an SVG element
         shapes.forEach(shape => {
             svg1.appendChild(shape);
         });
-
 
 
     }

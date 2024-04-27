@@ -15,18 +15,15 @@ import {
 } from "https://cdn.skypack.dev/d3-3d@1.0.0";
 
 
-/*
-let shape = {
+/*let shape = {
     sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",
     structure: "((((((((((((........)))))).((((((.......)))))).((((((........))))))))))))"
-}
-*/
+}*/
 
 let shape = {
     sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",
     structure: "((((((((((((..[[[[..)))))).((((((.......)))))).((((((.]]]]...))))))))))))"
 }
-
 
 /*let shape = {
     sequence: "UACCUGUGAAGAUGCAGGUUACCCGCGACAGGACGGAAAGACCCCGUGGAGCUUUACUGUAGCCUGAUAUUGAAAUUCGGCACAGCUUGUACAGGAUAGGUAGGAGCCUUUGAAACGUGAGCGCUAGCUUACGUGGAGGCGCUGGUGGGAUACUACCCUAGCUGUGUUGGCUUUCUAACCCGCACCACUUAUCGUGGUGGGAGACAGUGUCAGGCGGGCAGUUUGACUGGGGCGGUCGCCUCCUAAAAGGUAACGGAGGCGCUCAAAGGUUCCCUCAGAAUGGUUGGAAAUCAUUCAUAGAGUGUAAAGGCAUAAGGGAGCUUGACUGCGAGACCUACAAGUCGAGCAGGGUCGAAAGACGGACUUAGUGAUCCGGUGGUUCCGCAUGGAAGGGCCAUCGCUCAACGGAUAAAAGCUACCCCGGGGAUAACAGGCUUAUCUCCCCCAAGAGUUCACAUCGACGGGGAGGUUUGGCACCUCGAUGUCGGCUCAUCGCAUCCUGGGGCUGUAGUCGGUCCCAAGGGUUGGGCUGUUCGCCCAUUAAAGCGGUACGCGAGCUGGGUUCAGAACGUCGUGAGACAGUUCGGUCCCUAUCCGUCGUGGGC",
@@ -34,9 +31,23 @@ let shape = {
 }*/
 
 /*let shape = {
+    structure: ".((((........))))...(((((..((..........(((((.......)))))....))....((.(((..(((.......))).((((((..................))))))....(..........))))).))....(((((((.((((.........))))....))))))).(((((...........))))))))).....",
+    sequence: ""
+}*/
+
+/*let shape = {
     sequence: 'GGAGAUUGAUCAUCUCCAUAGGGUAUGGCUGAAUAACUGUUGUGGUCAUCACGCAGUAAGGCUGAAGUAGAACAGGCUGUGGUGGCCGCCAAGGAAUACCGGGAGACCGGAGUCUUGUGAAUCCUUAACCGGGAGUUCGAAAAGAUCAGAGGUUUACUAAGCAUUAGUGAGACCCCUCUGUUGAAGGUAUAAUGUAAUCCUUCUACCCACCU',
     structure: ".((((........))))...(((((..((..........(((((.......)))))....))....((.(((..(((..[[[[.))).((((((..................))))))....(....]]]]..))))).))....(((((((.((((....[[[[.))))....))))))).(((((...]]]]....)))))))))....."
 }*/
+
+const topBarHeight = 100;
+
+addEventListener("resize", (event) => {});
+
+onresize = (event) => {
+    console.log("resize", window.innerWidth, window.innerHeight);
+};
+
 
 /*let shape = {
     sequence: 'GGAGAUUGAUCAUCUCCAUAGGGUAUGGCUGAAUAACUGUUGUGGUCAUCACGCAGUAAGGCUGAAGUAGAACAGGCUGUGGUGGCCGCCAAGGAAUACCGGGAGACCGGAGUCUUGUGAAUCCUUAACCGGGAGUUCGAAAAGAUCAGAGGUUUACUAAGCAUUAGUGAGACCCCUCUGUUGAAGGUAUAAUGUAAUCCUUCUACCCACCU',
@@ -85,9 +96,9 @@ function shadeColor(color, percent) {
     G = Math.round(G)
     B = Math.round(B)
 
-    var RR = ((R.toString(16).length == 1) ? "0" + R.toString(16) : R.toString(16));
-    var GG = ((G.toString(16).length == 1) ? "0" + G.toString(16) : G.toString(16));
-    var BB = ((B.toString(16).length == 1) ? "0" + B.toString(16) : B.toString(16));
+    var RR = ((R.toString(16).length === 1) ? "0" + R.toString(16) : R.toString(16));
+    var GG = ((G.toString(16).length === 1) ? "0" + G.toString(16) : G.toString(16));
+    var BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
 
     return "#" + RR + GG + BB;
 }
@@ -97,12 +108,8 @@ var maxValue = 100;
 var minValue = -100;
 
 function getShadingPercentage(value) {
-    // const maxVale = 50;
-    // const minValue = -100;
     const percent = 60;
     return -((percent / 100 * (100 - Math.min(100, (value - minValue) / (maxValue - minValue) * 100))))
-
-
 }
 
 
@@ -133,17 +140,13 @@ function loadCanvas(pos, adj, knots) {
         }
     }
     dist1.sort();
-    console.log(dist1);
-    console.log("avg: ", dist1[Math.floor(dist1.length / 2)]);
 
     scale /= dist1[Math.floor(dist1.length / 2)]
     maxDist *= scale
 
-    // console.log(maxDist)
-
     const {innerWidth, innerHeight} = window;
     const data = [];
-    const origin = {x: innerWidth / 2, y: innerHeight / 2};
+    const origin = {x: innerWidth / 2, y: (innerHeight + topBarHeight) / 2};
     const startAngle = 0;
     var distances = [];
     const sphereRadius = 16;
@@ -176,7 +179,7 @@ function loadCanvas(pos, adj, knots) {
 
     select('svg')
         .attr('width', `${innerWidth}px`)
-        .attr('height', `${innerHeight}px`);
+        .attr('height', `${innerHeight - topBarHeight}px`);
 
     for (let i = 0; i < pos.length; i++) {
         data.push({
@@ -208,20 +211,6 @@ function loadCanvas(pos, adj, knots) {
     const lines3dWrapper = lines3d(data1);
     const points3dWrapper = points3d(data);
 
-    /*const pointsElements = [];
-    for (let i = 0; i < data.length; i++) {
-        const element = document.createElement("circle");
-        element.classList.add("d3-3d");
-        element.setAttribute("fill", "#ffe372");
-        element.setAttribute("stroke", "#7a4900");
-        element.setAttribute("cx", data[i].projected.x);
-        element.setAttribute("cy", data[i].projected.y);
-        element.setAttribute("r", 12);
-        element.setAttribute("stroke-width", 3);
-        document.getElementById("core").appendChild(element);
-        pointsElements.push(element);
-    }*/
-
     function dragStart(e) {
         mx = e.x;
         my = e.y;
@@ -251,11 +240,6 @@ function loadCanvas(pos, adj, knots) {
         const points = svg.selectAll('circle').data(data);
         const lines1 = svg.selectAll('line').data(dataAdj);
         const texts = svg.selectAll("text.text").data(data);
-
-        /*for (let i = 0; i < pointsElements.length; i++) {
-            pointsElements[i].setAttribute("cx", data[i].projected.x);
-            pointsElements[i].setAttribute("cy", data[i].projected.y);
-        }*/
 
         distances = []
 
@@ -309,10 +293,12 @@ function loadCanvas(pos, adj, knots) {
             .attr('z', (d, i) => Math.min(d[data2[i][1]].rotated.z, d[data2[i][0]].rotated.z))
             .attr('stroke', (d, i) => {
                 const z = (d[data2[i][1]].rotated.z + d[data2[i][0]].rotated.z) / 2;
+                // console.log(data2[i][1], data2[i][0])
                 if (data2[i][1] >= shape.structure.length || data2[i][0] >= shape.structure.length) {
+                    // console.log("marker connection")
                     return '#FFFFFF'
                 }
-                else if (data2[i][0] == data2[i][1] + 1 || data2[i][0] == data2[i][1] - 1) {
+                else if (data2[i][0] === data2[i][1] + 1 || data2[i][0] === data2[i][1] - 1) {
                     return shadeColor('#ffffff', getShadingPercentage(z))
                 } else if (knots.includes(data2[i][1]) || knots.includes(data2[i][0])) {
                     // return shadeColor('#72ff9c', getShadingPercentage(z))
@@ -326,8 +312,8 @@ function loadCanvas(pos, adj, knots) {
             })*/
             .attr('stroke-width', (d, i) => {
                 if (data2[i][1] >= shape.structure.length || data2[i][0] >= shape.structure.length) {
-                    return 1
-                } return 5
+                    return 2;
+                } return 5;
             });
 
 
@@ -337,11 +323,13 @@ function loadCanvas(pos, adj, knots) {
             .merge(points)
             .classed('d3-3d', true)
             .attr('fill', (d, i) => {
+                //if (i >= shape.structure.length) return shadeColor("#000cff", getShadingPercentage(d.rotated.z));
                 if (i >= shape.structure.length) return 'transparent'
                 return shadeColor("#2C2B1C", getShadingPercentage(d.rotated.z))
             })
             .attr('stroke', (d, i) => {
-                if (i >= shape.structure.length) return 'transparent'
+                // console.log("i - ", i, "; len - ", shape.structure.length, "; ", i >= shape.structure.length)
+                if (i >= shape.structure.length) return 'transparent';
                 return shadeColor("#FFDB1C", getShadingPercentage(d.rotated.z))
             })
             .attr('cx', d => d.projected.x)
@@ -367,8 +355,8 @@ function loadCanvas(pos, adj, knots) {
             .classed("d3-3d", true)
             .merge(texts)
             .attr("fill", ((d, i) => {
-                /*if (i >= shape.structure.length) return shadeColor("#ff0000", getShadingPercentage(d.rotated.z))
-                return shadeColor("#D1D1D1", getShadingPercentage(d.rotated.z))*/
+                // if (i >= shape.structure.length) return shadeColor("#ff0000", getShadingPercentage(d.rotated.z))
+                // return shadeColor("#D1D1D1", getShadingPercentage(d.rotated.z))
                 return shadeColor("#D1D1D1", getShadingPercentage(d.rotated.z))
             }))
             .attr("stroke", "none")

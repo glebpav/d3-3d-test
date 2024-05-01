@@ -8,21 +8,33 @@ import {
     lines3D,
 } from "https://cdn.skypack.dev/d3-3d@1.0.0";
 
+import {
+    shadeColor,
+    ColorManager
+} from "/utils/colorManager.js"
 
-let shape = {
+import {
+    svgString2Image,
+    getSVGString
+} from "/utils/svgExportManager.js"
+
+// 422
+
+// broken structure
+/*let shape = {
     sequence: "AFADFADFAFASDFASDFASDFASDFASDFASDFASDFASDFASDFASDFASDFADWSFADW",
     structure: "(((((((((()))))))))))))))))))))))))))))))))))))))))))))))))))))"
-}
+}*/
 
 /*let shape = {
     sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",
     structure: "((((((((((((........)))))).((((((.......)))))).((((((........))))))))))))"
 }*/
 
-/*let shape = {
+let shape = {
     sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",
     structure: "((((((((((((..[[[[..)))))).((((((.......)))))).((((((.]]]]...))))))))))))"
-}*/
+}
 
 /*let shape = {
     sequence: "UACCUGUGAAGAUGCAGGUUACCCGCGACAGGACGGAAAGACCCCGUGGAGCUUUACUGUAGCCUGAUAUUGAAAUUCGGCACAGCUUGUACAGGAUAGGUAGGAGCCUUUGAAACGUGAGCGCUAGCUUACGUGGAGGCGCUGGUGGGAUACUACCCUAGCUGUGUUGGCUUUCUAACCCGCACCACUUAUCGUGGUGGGAGACAGUGUCAGGCGGGCAGUUUGACUGGGGCGGUCGCCUCCUAAAAGGUAACGGAGGCGCUCAAAGGUUCCCUCAGAAUGGUUGGAAAUCAUUCAUAGAGUGUAAAGGCAUAAGGGAGCUUGACUGCGAGACCUACAAGUCGAGCAGGGUCGAAAGACGGACUUAGUGAUCCGGUGGUUCCGCAUGGAAGGGCCAUCGCUCAACGGAUAAAAGCUACCCCGGGGAUAACAGGCUUAUCUCCCCCAAGAGUUCACAUCGACGGGGAGGUUUGGCACCUCGAUGUCGGCUCAUCGCAUCCUGGGGCUGUAGUCGGUCCCAAGGGUUGGGCUGUUCGCCCAUUAAAGCGGUACGCGAGCUGGGUUCAGAACGUCGUGAGACAGUUCGGUCCCUAUCCGUCGUGGGC",
@@ -56,7 +68,7 @@ fetch('http://0.0.0.0:80/graph-3d', {
 })
     .then(response => {
         if (!response.ok) {
-            throw response.text().then(text => { throw new Error(text) })
+            return response.text().then(text => { throw new Error(text) })
         }
         response.json().then(data => {
             const input = JSON.parse(data)
@@ -68,40 +80,11 @@ fetch('http://0.0.0.0:80/graph-3d', {
     });
 
 
-function shadeColor(color, percent) {
-
-    var R = parseInt(color.substring(1, 3), 16);
-    var G = parseInt(color.substring(3, 5), 16);
-    var B = parseInt(color.substring(5, 7), 16);
-
-    R = parseInt(R * (100 + percent) / 100);
-    G = parseInt(G * (100 + percent) / 100);
-    B = parseInt(B * (100 + percent) / 100);
-
-    R = (R < 255) ? R : 255;
-    G = (G < 255) ? G : 255;
-    B = (B < 255) ? B : 255;
-
-    R = Math.round(R)
-    G = Math.round(G)
-    B = Math.round(B)
-
-    var RR = ((R.toString(16).length === 1) ? "0" + R.toString(16) : R.toString(16));
-    var GG = ((G.toString(16).length === 1) ? "0" + G.toString(16) : G.toString(16));
-    var BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
-
-    return "#" + RR + GG + BB;
-}
-
 let svg;
 let scale = 8;
 let maxValue = 100;
 let minValue = -100;
-
-function getShadingPercentage(value) {
-    const percent = 60;
-    return -((percent / 100 * (100 - Math.min(100, (value - minValue) / (maxValue - minValue) * 100))))
-}
+let colorManager = new ColorManager(maxValue, minValue);
 
 
 function loadCanvas(pos, adj, knots) {
@@ -243,6 +226,7 @@ function loadCanvas(pos, adj, knots) {
         }
 
         minValue = maxValue - maxDist;
+        colorManager.updateValues(minValue, maxValue);
 
         const l = lines1
             .enter()
@@ -250,7 +234,6 @@ function loadCanvas(pos, adj, knots) {
             .merge(lines1)
             .classed('d3-3d', true)
             .datum(data)
-            // .attr('d', lineGenerator)
             .attr('x1', (d, i) => {
                 return d[data2[i][0]].projected.x
                     + (d[data2[i][1]].projected.x - d[data2[i][0]].projected.x)
@@ -277,14 +260,13 @@ function loadCanvas(pos, adj, knots) {
             .attr('stroke', (d, i) => {
                 const z = (d[data2[i][1]].rotated.z + d[data2[i][0]].rotated.z) / 2;
                 if (data2[i][1] >= shape.structure.length || data2[i][0] >= shape.structure.length) {
-                    return shadeColor('#ffffff', getShadingPercentage(z))
+                    return shadeColor('#ffffff', colorManager.getShadingPercentage(z))
                 }
                 else if (data2[i][0] === data2[i][1] + 1 || data2[i][0] === data2[i][1] - 1) {
-                    return shadeColor('#ffffff', getShadingPercentage(z))
+                    return shadeColor('#ffffff', colorManager.getShadingPercentage(z))
                 } else if (knots.includes(data2[i][1]) || knots.includes(data2[i][0])) {
-                    // return shadeColor('#72ff9c', getShadingPercentage(z))
-                    return shadeColor('#207dff', getShadingPercentage(z))
-                } else return shadeColor('#207dff', getShadingPercentage(z))
+                    return shadeColor('#207dff', colorManager.getShadingPercentage(z))
+                } else return shadeColor('#207dff', colorManager.getShadingPercentage(z))
             })
             .attr('stroke-width', (d, i) => {
                 if (data2[i][1] >= shape.structure.length || data2[i][0] >= shape.structure.length) {
@@ -300,12 +282,12 @@ function loadCanvas(pos, adj, knots) {
             .attr('fill', (d, i) => {
                 //if (i >= shape.structure.length) return shadeColor("#000cff", getShadingPercentage(d.rotated.z));
                 if (i >= shape.structure.length) return 'transparent'
-                return shadeColor("#2C2B1C", getShadingPercentage(d.rotated.z))
+                return shadeColor("#2C2B1C", colorManager.getShadingPercentage(d.rotated.z))
             })
             .attr('stroke', (d, i) => {
                 // console.log("i - ", i, "; len - ", shape.structure.length, "; ", i >= shape.structure.length)
                 if (i >= shape.structure.length) return 'transparent';
-                return shadeColor("#FFDB1C", getShadingPercentage(d.rotated.z))
+                return shadeColor("#FFDB1C", colorManager.getShadingPercentage(d.rotated.z))
             })
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
@@ -330,7 +312,7 @@ function loadCanvas(pos, adj, knots) {
             .classed("d3-3d", true)
             .merge(texts)
             .attr("fill", ((d, i) => {
-                return shadeColor("#D1D1D1", getShadingPercentage(d.rotated.z))
+                return shadeColor("#D1D1D1", colorManager.getShadingPercentage(d.rotated.z))
             }))
             .attr("stroke", "none")
             .attr("x", (d) => d.projected.x)
@@ -374,110 +356,9 @@ function loadCanvas(pos, adj, knots) {
 // Set up the export button
 d3.select('#saveButton').on('click', function(){
     var svgString = getSVGString(svg.node());
-    svgString2Image( svgString, innerWidth, innerHeight, 'png', save ); // passes Blob and filesize String to the callback
+    svgString2Image( svgString, innerWidth * 2, innerHeight * 2, 'png', save ); // passes Blob and filesize String to the callback
 
     function save( dataBlob, filesize ){
         saveAs( dataBlob, 'D3 vis exported to PNG.png' ); // FileSaver.js function
     }
 });
-
-// Below are the functions that handle actual exporting:
-// getSVGString ( svgNode ) and svgString2Image( svgString, width, height, format, callback )
-function getSVGString( svgNode ) {
-    svgNode.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
-    var cssStyleText = getCSSStyles( svgNode );
-    appendCSS( cssStyleText, svgNode );
-
-    var serializer = new XMLSerializer();
-    var svgString = serializer.serializeToString(svgNode);
-    svgString = svgString.replace(/(\w+)?:?xlink=/g, 'xmlns:xlink='); // Fix root xlink without namespace
-    svgString = svgString.replace(/NS\d+:href/g, 'xlink:href'); // Safari NS namespace fix
-
-    return svgString;
-
-    function getCSSStyles( parentElement ) {
-        var selectorTextArr = [];
-
-        // Add Parent element Id and Classes to the list
-        selectorTextArr.push( '#'+parentElement.id );
-        for (var c = 0; c < parentElement.classList.length; c++)
-            if ( !contains('.'+parentElement.classList[c], selectorTextArr) )
-                selectorTextArr.push( '.'+parentElement.classList[c] );
-
-        // Add Children element Ids and Classes to the list
-        var nodes = parentElement.getElementsByTagName("*");
-        for (var i = 0; i < nodes.length; i++) {
-            var id = nodes[i].id;
-            if ( !contains('#'+id, selectorTextArr) )
-                selectorTextArr.push( '#'+id );
-
-            var classes = nodes[i].classList;
-            for (var c = 0; c < classes.length; c++)
-                if ( !contains('.'+classes[c], selectorTextArr) )
-                    selectorTextArr.push( '.'+classes[c] );
-        }
-
-        // Extract CSS Rules
-        var extractedCSSText = "";
-        for (var i = 0; i < document.styleSheets.length; i++) {
-            var s = document.styleSheets[i];
-
-            try {
-                if(!s.cssRules) continue;
-            } catch( e ) {
-                if(e.name !== 'SecurityError') throw e; // for Firefox
-                continue;
-            }
-
-            var cssRules = s.cssRules;
-            for (var r = 0; r < cssRules.length; r++) {
-                if ( contains( cssRules[r].selectorText, selectorTextArr ) )
-                    extractedCSSText += cssRules[r].cssText;
-            }
-        }
-
-
-        return extractedCSSText;
-
-        function contains(str,arr) {
-            return arr.indexOf( str ) === -1 ? false : true;
-        }
-
-    }
-
-    function appendCSS( cssText, element ) {
-        var styleElement = document.createElement("style");
-        styleElement.setAttribute("type","text/css");
-        styleElement.innerHTML = cssText;
-        var refNode = element.hasChildNodes() ? element.children[0] : null;
-        element.insertBefore( styleElement, refNode );
-    }
-}
-
-
-function svgString2Image( svgString, width, height, format, callback ) {
-    var format = format ? format : 'png';
-
-    var imgsrc = 'data:image/svg+xml;base64,'+ btoa( unescape( encodeURIComponent( svgString ) ) ); // Convert SVG string to data URL
-
-    var canvas = document.createElement("canvas");
-    var context = canvas.getContext("2d");
-
-    canvas.width = width;
-    canvas.height = height;
-
-    var image = new Image();
-    image.onload = function() {
-        context.clearRect ( 0, 0, width, height );
-        context.drawImage(image, 0, 0, width, height);
-
-        canvas.toBlob( function(blob) {
-            var filesize = Math.round( blob.length/1024 ) + ' KB';
-            if ( callback ) callback( blob, filesize );
-        });
-
-
-    };
-
-    image.src = imgsrc;
-}

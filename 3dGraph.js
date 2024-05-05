@@ -21,10 +21,12 @@ import {
 // 422
 
 // broken structure
-/*let shape = {
+/*
+let shape = {
     sequence: "AFADFADFAFASDFASDFASDFASDFASDFASDFASDFASDFASDFASDFASDFADWSFADW",
     structure: "(((((((((()))))))))))))))))))))))))))))))))))))))))))))))))))))"
-}*/
+}
+*/
 
 /*let shape = {
     sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",

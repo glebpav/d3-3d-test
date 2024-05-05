@@ -27,16 +27,16 @@ const bezieDelta = 0.7
 
 
 
-/*let shape = {
+let shape = {
     sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",
     structure: "((((((((((((..[[[[..)))))).((((((.......)))))).((((((.]]]]...))))))))))))"
-}*/
+}
 
 
-let shape = {
+/*let shape = {
     sequence: 'GGAGAUUGAUCAUCUCCAUAGGGUAUGGCUGAAUAACUGUUGUGGUCAUCACGCAGUAAGGCUGAAGUAGAACAGGCUGUGGUGGCCGCCAAGGAAUACCGGGAGACCGGAGUCUUGUGAAUCCUUAACCGGGAGUUCGAAAAGAUCAGAGGUUUACUAAGCAUUAGUGAGACCCCUCUGUUGAAGGUAUAAUGUAAUCCUUCUACCCACCU',
     structure: ".((((........))))...(((((..((..........(((((.......)))))....))....((.(((..(((.......))).((((((..................))))))....(..........))))).))....(((((((.((((.........))))....))))))).(((((...........)))))))))....."
-}
+}*/
 
 fetch('http://0.0.0.0:80/graph-2d', {
     method: 'POST',
@@ -104,7 +104,7 @@ function loadCanvas(pos, adj, r) {
                 svg.append('path')
                     .attr('d', `M ${pos[idx1][0] * scale + origin.x} ${pos[idx1][1] * scale + origin.y} Q ${bezieX} ${bezieY} ${pos[idx2][0] * scale + origin.x} ${pos[idx2][1] * scale + origin.y}`)
                     .attr('stroke', '#d3ae00')
-                    .attr('stroke-width', 1)
+                    .attr('stroke-width', Math.min(Math.max(2 / 30 * scale, 1), 2.4))
                     .attr('fill', 'transparent');
             }
         })

@@ -88,16 +88,16 @@ export function svgString2Image(svgString, width, height, format, callback) {
     canvas.height = height;
 
     var image = new Image();
+    console.log("here2")
     image.onload = function () {
         context.clearRect(0, 0, width, height);
         context.drawImage(image, 0, 0, width, height);
 
         canvas.toBlob(function (blob) {
             var filesize = Math.round(blob.length / 1024) + ' KB';
+            console.log("filesize", filesize);
             if (callback) callback(blob, filesize);
         });
-
-
     };
 
     image.src = imgsrc;

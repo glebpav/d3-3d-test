@@ -284,12 +284,13 @@ function loadCanvas(pos, adj, knots) {
             .attr('fill', (d, i) => {
                 //if (i >= shape.structure.length) return shadeColor("#000cff", getShadingPercentage(d.rotated.z));
                 if (i >= shape.structure.length) return 'transparent'
-                return shadeColor("#2C2B1C", colorManager.getShadingPercentage(d.rotated.z))
+                return shadeColor("#1c292c", colorManager.getShadingPercentage(d.rotated.z))
             })
             .attr('stroke', (d, i) => {
                 // console.log("i - ", i, "; len - ", shape.structure.length, "; ", i >= shape.structure.length)
                 if (i >= shape.structure.length) return 'transparent';
-                return shadeColor("#FFDB1C", colorManager.getShadingPercentage(d.rotated.z))
+
+                return shadeColor("#62C7FF", colorManager.getShadingPercentage(d.rotated.z))
             })
             .attr('cx', d => d.projected.x)
             .attr('cy', d => d.projected.y)
@@ -357,7 +358,7 @@ function loadCanvas(pos, adj, knots) {
 
 // Set up the export button
 d3.select('#saveButton').on('click', function(){
-    var svgString = getSVGString(svg.node());
+    let svgString = getSVGString(svg.node());
     svgString2Image( svgString, innerWidth * 2, innerHeight * 2, 'png', save ); // passes Blob and filesize String to the callback
 
     function save( dataBlob, filesize ){

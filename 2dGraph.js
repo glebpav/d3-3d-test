@@ -20,17 +20,17 @@ const circleRadius = 300.;
 const bezieDelta = 0.7
 
 
-/*let shape = {
+let shape = {
     sequence: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     structure: ".((((....[[[[[[[[...))))......]]]]]]]].."
-}*/
+}
 
 
 
-let shape = {
+/*let shape = {
     sequence: "CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUGCU",
     structure: "((((((((((((..[[[[..)))))).((((((.......)))))).((((((.]]]]...))))))))))))"
-}
+}*/
 
 
 /*let shape = {
@@ -103,7 +103,7 @@ function loadCanvas(pos, adj, r) {
 
                 svg.append('path')
                     .attr('d', `M ${pos[idx1][0] * scale + origin.x} ${pos[idx1][1] * scale + origin.y} Q ${bezieX} ${bezieY} ${pos[idx2][0] * scale + origin.x} ${pos[idx2][1] * scale + origin.y}`)
-                    .attr('stroke', '#d3ae00')
+                    .attr('stroke', '#62C7FF')
                     .attr('stroke-width', Math.min(Math.max(2 / 30 * scale, 1), 2.4))
                     .attr('fill', 'transparent');
             }
@@ -119,9 +119,9 @@ function loadCanvas(pos, adj, r) {
             .attr('cx', x)
             .attr('cy', y)
             .attr('r', sphereRadius / 20 * scale)
-            .attr('stroke', '#FFDB1C')
+            .attr('stroke', '#62C7FF')
             .attr('stroke-width', 3 / 30 * scale)
-            .style('fill', '#2C2B1C');
+            .style('fill', '#1c292c');
 
         svg.append('text')
             .attr("class", "text")
@@ -157,7 +157,7 @@ function loadCanvas(pos, adj, r) {
         .attr("text-anchor", "middle")
         .attr("font-family", "Inter")
         .attr("font-weight", 'regular')
-        .attr("fill", '#207dff')
+        .attr("fill", '#62C7FF')
         .attr("x", pos[0][0] * scale + origin.x + (pos[0][0] * scale + origin.x - origin.x) / 140 * scale)
         .attr("y", pos[0][1] * scale + origin.y + (pos[0][1] * scale + origin.y - origin.y) / 140 * scale)
         .text("5'");
@@ -169,7 +169,7 @@ function loadCanvas(pos, adj, r) {
         .attr("text-anchor", "middle")
         .attr("font-family", "Inter")
         .attr("font-weight", 'regular')
-        .attr("fill", '#207dff')
+        .attr("fill", '#62C7FF')
         .attr("x", pos[pos.length - 1][0] * scale + origin.x + (pos[pos.length - 1][0] * scale + origin.x - origin.x) / 140 * scale)
         .attr("y", pos[pos.length - 1][1] * scale + origin.y + (pos[pos.length - 1][1] * scale + origin.y - origin.y) / 140 * scale)
         .text("3'");
